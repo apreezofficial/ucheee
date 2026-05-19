@@ -33,6 +33,7 @@ import {
 import confetti from 'canvas-confetti';
 import questionsData from './data/questions.json';
 import { Question, LeaderboardEntry } from './types';
+import { API_BASE_URL } from './config';
 
 // --- Theme Management ---
 const useTheme = () => {
@@ -745,7 +746,7 @@ const ResultsPage = () => {
     // Save progress to PHP backend
     const saveScore = async () => {
       try {
-        await fetch('http://localhost:8001/api/save_score.php', {
+        await fetch(`${API_BASE_URL}/api/save_score.php`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -817,7 +818,7 @@ const LeaderboardPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:8001/api/get_leaderboard.php')
+    fetch(`${API_BASE_URL}/api/get_leaderboard.php`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {

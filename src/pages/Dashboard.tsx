@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { StatCounter, BouncingTitle } from '../components/AnimatedComponents';
+import { API_BASE_URL } from '../config';
 
 const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
@@ -17,7 +18,7 @@ const Dashboard = () => {
       setUser(parsedUser);
       
       // Fetch user's personal history
-      fetch(`http://localhost:8001/api/history.php?username=${parsedUser.username}`)
+      fetch(`${API_BASE_URL}/api/history.php?username=${parsedUser.username}`)
         .then(res => res.json())
         .then(data => {
           if (data.status === 'success') {
@@ -26,7 +27,7 @@ const Dashboard = () => {
         });
     }
 
-    fetch('http://localhost:8001/api/stats.php')
+    fetch(`${API_BASE_URL}/api/stats.php`)
       .then(res => res.json())
       .then(data => {
         setStats(data.stats);

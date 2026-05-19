@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Brain } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -16,7 +17,7 @@ const Login = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8001/api/login.php', {
+      const response = await fetch(`${API_BASE_URL}/api/login.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
