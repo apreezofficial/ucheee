@@ -308,13 +308,6 @@ const LandingPage = () => {
               >
                 Start Learning
               </motion.button>
-              <motion.button 
-                whileHover={{ scale: 1.05 }}
-                className="btn btn-secondary" 
-                style={{ padding: '16px 48px', fontSize: '1.1rem', background: 'var(--bg-color)', color: 'var(--text-main)' }}
-              >
-                Get a Demo
-              </motion.button>
             </div>
           </div>
         </div>
@@ -378,42 +371,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="section">
-        <div className="container">
-          <div style={{ textAlign: 'center', marginBottom: '80px' }}>
-            <BouncingTitle text="Student Stories." style={{ fontSize: '3rem', marginBottom: '20px', fontWeight: 800, textAlign: 'center' }} />
-            <p style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto', fontSize: '1.1rem' }}>Join thousands of students who have leveled up their grades.</p>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '32px' }}>
-            {[
-              { name: "Sarah Johnson", major: "2nd Year Biology", text: "This app helped me move from a C to an A in Chemistry! The instant corrections are life-saving.", color: "#7928ca" },
-              { name: "David Chen", major: "CS Major", text: "Best study tool I've used. It's actually fun to use and works perfectly on my phone during my commute.", color: "#0070f3" },
-              { name: "Michelle Okafor", major: "Economics Student", text: "The variety of categories is amazing. I can prep for all my electives in one place. Truly game-changing.", color: "#ff0080" }
-            ].map((t, i) => (
-              <motion.div 
-                key={i} 
-                className="card"
-                whileInView={{ opacity: 1, scale: 1 }}
-                initial={{ opacity: 0, scale: 0.95 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                style={{ padding: '40px', borderRadius: '24px', position: 'relative' }}
-              >
-                <div style={{ color: 'var(--success)', marginBottom: '20px', fontSize: '1.5rem' }}>"</div>
-                <p style={{ fontSize: '1.1rem', fontStyle: 'italic', marginBottom: '30px', lineHeight: '1.6', color: 'var(--text-main)' }}>{t.text}</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: t.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: '#fff' }}>{t.name[0]}</div>
-                  <div>
-                    <p style={{ fontWeight: 800, fontSize: '1rem' }}>{t.name}</p>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>{t.major}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+
 
       {/* Features Section */}
       <section className="section">
