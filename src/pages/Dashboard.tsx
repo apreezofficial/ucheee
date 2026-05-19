@@ -6,8 +6,10 @@ import { API_BASE_URL } from '../config';
 
 const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
-  const [stats, setStats] = useState<any[]>([]);
-  const [activity, setActivity] = useState<any[]>([]);
+  const [stats, setStats] = useState<any[]>([
+    { label: "Total Quizzes Taken", value: 0 },
+    { label: "Average Score", value: "0 pts" }
+  ]);
   const [history, setHistory] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState('overview');
 
@@ -22,18 +24,17 @@ const Dashboard = () => {
         .then(res => res.json())
         .then(data => {
           if (data.status === 'success') {
-            setHistory(data.history);
+            const hist = data.history;
+            setHistory(hist);
+            const totalQuizzes = hist.length;
+            const avgScore = totalQuizzes > 0 ? Math.round(hist.reduce((acc: number, curr: any) => acc + parseInt(curr.score), 0) / totalQuizzes) : 0;
+            setStats([
+              { label: "Total Quizzes", value: totalQuizzes },
+              { label: "Avg. Score", value: `${avgScore} pts` }
+            ]);
           }
         });
     }
-
-    fetch(`${API_BASE_URL}/api/stats.php`)
-      .then(res => res.json())
-      .then(data => {
-        setStats(data.stats);
-        setActivity(data.recentActivity);
-      })
-      .catch(err => console.error("Failed to fetch stats", err));
   }, []);
 
   if (!user) return <div className="container" style={{ padding: '80px 0' }}>Please sign in to view your dashboard.</div>;
