@@ -981,7 +981,7 @@ const StudyGroupsPage = () => {
   const handleJoin = (id: number) => {
     requireLogin(() =>
       setGroups(prev => prev.map(g =>
-        g.id === id && !g.joined ? { ...g, members: g.members + 1, joined: true, membersList: [...(g.membersList || []), username] } : g
+        g.id === id && !g.joined ? { ...g, members: g.members + 1, joined: true, activity: 'New Member', membersList: [...(g.membersList || []), username] } : g
       ))
     );
   };
@@ -1017,7 +1017,7 @@ const StudyGroupsPage = () => {
     if (!text.trim() || !activeChat) return;
     const t = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const newMsg = { u: username || 'You', m: text.trim(), t };
-    const updatedGroup = { ...activeChat, messages: [...(activeChat.messages || []), newMsg] };
+    const updatedGroup = { ...activeChat, activity: 'Active Now', messages: [...(activeChat.messages || []), newMsg] };
     setGroups(prev => prev.map(g => g.id === activeChat.id ? updatedGroup : g));
     setActiveChat(updatedGroup);
   };
