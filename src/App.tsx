@@ -1064,7 +1064,7 @@ const StudyGroupsPage = () => {
         {activeChat && (
           <motion.div
             initial={{ opacity: 0, x: '100%' }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: '100%' }}
-            style={{ position: 'fixed', right: 0, top: 0, height: '100vh', width: '100%', maxWidth: '420px', background: 'var(--bg-color)', borderLeft: '1px solid var(--border)', zIndex: 2100, boxShadow: '-20px 0 60px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column' }}
+            style={{ position: 'fixed', right: 0, top: 0, bottom: 0, width: '100%', maxWidth: '420px', background: 'var(--bg-color)', borderLeft: '1px solid var(--border)', zIndex: 2100, boxShadow: '-20px 0 60px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column' }}
           >
             <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--accents-1)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
