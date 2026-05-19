@@ -181,20 +181,6 @@ const Navbar = () => {
           <Link to="/leaderboard" className="nav-link">Leaderboard</Link>
           <Link to="/groups" className="nav-link">Study Groups</Link>
           <Link to="/survey" className="nav-link">Survey</Link>
-          
-          <div className="nav-dropdown">
-            <button className="nav-link dropdown-trigger">
-              Legal <ChevronDown size={14} style={{ marginLeft: '4px' }} />
-            </button>
-            <div className="dropdown-menu">
-              <Link to="/privacy" className="dropdown-item">
-                <ShieldAlert size={16} /> Privacy Policy
-              </Link>
-              <Link to="/terms" className="dropdown-item">
-                <FileText size={16} /> Terms of Service
-              </Link>
-            </div>
-          </div>
 
           {username ? (
             <div className="nav-user-section">
@@ -957,77 +943,96 @@ const TermsPage = () => (
 );
 
 const StudyGroupsPage = () => {
-  const [groups, setGroups] = useState([
-    { id: 1, name: "CS Level 200", members: 42, activity: "Active", color: "#0070f3", joined: false },
-    { id: 2, name: "BioChem Squad", members: 28, activity: "Active", color: "#7928ca", joined: false },
-    { id: 3, name: "Math Giants", members: 15, activity: "Quiet", color: "#ff0080", joined: false },
-    { id: 4, name: "Physics Lab", members: 31, activity: "Very Active", color: "#f5a623", joined: false }
-  ]);
+  const navigate = useNavigate();
+  const username = localStorage.getItem('username');
+  const [groups, setGroups] = useState<any[]>([]);
   const [showCreate, setShowCreate] = useState(false);
-  const [newName, setNewName] = useState("");
+  const [newName, setNewName] = useState('');
   const [activeChat, setActiveChat] = useState<any>(null);
 
+  const requireLogin = (action: () => void) => {
+    if (!username) { navigate('/login'); return; }
+    action();
+  };
+
   const handleJoin = (id: number) => {
-    setGroups(groups.map(g => {
-      if (g.id === id && !g.joined) {
-        return { ...g, members: g.members + 1, joined: true };
-      }
-      return g;
-    }));
+    requireLogin(() =>
+      setGroups(prev => prev.map(g =>
+        g.id === id && !g.joined ? { ...g, members: g.members + 1, joined: true } : g
+      ))
+    );
   };
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newName) return;
-    const colors = ["#0070f3", "#7928ca", "#ff0080", "#f5a623", "#50e3c2"];
+    if (!newName.trim()) return;
+    const colors = ['#0070f3', '#7928ca', '#ff0080', '#f5a623', '#50e3c2'];
     const newGroup = {
       id: Date.now(),
-      name: newName,
+      name: newName.trim(),
       members: 1,
-      activity: "Just Created",
+      activity: 'Just Created',
       color: colors[Math.floor(Math.random() * colors.length)],
-      joined: true
+      joined: true,
+      messages: [] as any[],
     };
-    setGroups([newGroup, ...groups]);
-    setNewName("");
+    setGroups(prev => [newGroup, ...prev]);
+    setNewName('');
     setShowCreate(false);
+  };
+
+  const sendMessage = (text: string) => {
+    if (!text.trim() || !activeChat) return;
+    const t = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const newMsg = { u: username || 'You', m: text.trim(), t };
+    const updatedGroup = { ...activeChat, messages: [...(activeChat.messages || []), newMsg] };
+    setGroups(prev => prev.map(g => g.id === activeChat.id ? updatedGroup : g));
+    setActiveChat(updatedGroup);
   };
 
   return (
     <div className="container" style={{ padding: '80px 0' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '60px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '60px', flexWrap: 'wrap', gap: '20px' }}>
         <div>
           <BouncingTitle text="Study Groups" style={{ fontSize: '4rem', fontWeight: 900 }} />
           <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem', marginTop: '10px' }}>Collaborate, share knowledge, and master your courses.</p>
         </div>
-        <button onClick={() => setShowCreate(true)} className="btn btn-primary" style={{ padding: '14px 28px' }}>Create New Group</button>
+        <motion.button
+          whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+          onClick={() => requireLogin(() => setShowCreate(true))}
+          className="btn btn-primary" style={{ padding: '14px 28px', fontWeight: 700 }}
+        >
+          + Create New Group
+        </motion.button>
       </div>
 
       <AnimatePresence>
         {showCreate && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
           >
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
               className="card" style={{ width: '100%', maxWidth: '450px', padding: '40px' }}
             >
-              <h2 style={{ marginBottom: '24px', fontWeight: 800 }}>Create Study Group</h2>
+              <h2 style={{ marginBottom: '8px', fontWeight: 800, fontSize: '1.8rem' }}>Create Study Group</h2>
+              <p style={{ color: 'var(--text-muted)', marginBottom: '32px', fontSize: '0.95rem' }}>
+                Creating as <strong style={{ color: 'var(--primary)' }}>{username}</strong>
+              </p>
               <form onSubmit={handleCreate}>
                 <div style={{ marginBottom: '24px' }}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-muted)' }}>GROUP NAME</label>
-                  <input 
-                    autoFocus
-                    value={newName} 
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Group Name</label>
+                  <input
+                    autoFocus value={newName}
                     onChange={(e) => setNewName(e.target.value)}
-                    placeholder="e.g. Organic Chemistry 101" 
+                    placeholder="e.g. Organic Chemistry 101"
                     style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--accents-1)', color: 'var(--text-main)', fontSize: '1rem' }}
                   />
                 </div>
                 <div style={{ display: 'flex', gap: '12px' }}>
-                  <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Create Group</button>
-                  <button type="button" onClick={() => setShowCreate(false)} className="btn btn-secondary" style={{ flex: 1 }}>Cancel</button>
+                  <button type="submit" className="btn btn-primary" style={{ flex: 1, padding: '14px' }}>Create Group</button>
+                  <button type="button" onClick={() => setShowCreate(false)} className="btn btn-secondary" style={{ flex: 1, padding: '14px' }}>Cancel</button>
                 </div>
               </form>
             </motion.div>
@@ -1035,39 +1040,75 @@ const StudyGroupsPage = () => {
         )}
 
         {activeChat && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: '100%' }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: '100%' }}
-            style={{ position: 'fixed', right: 0, top: 0, height: '100vh', width: '100%', maxWidth: '400px', background: 'var(--bg-color)', borderLeft: '1px solid var(--border)', zIndex: 2100, boxShadow: '-20px 0 60px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column' }}
+            style={{ position: 'fixed', right: 0, top: 0, height: '100vh', width: '100%', maxWidth: '420px', background: 'var(--bg-color)', borderLeft: '1px solid var(--border)', zIndex: 2100, boxShadow: '-20px 0 60px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column' }}
           >
-            <div style={{ padding: '24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--accents-1)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: activeChat.color }}></div>
-                <h3 style={{ fontWeight: 800 }}>{activeChat.name} Chat</h3>
-              </div>
-              <button onClick={() => setActiveChat(null)} style={{ background: 'none', border: 'none', color: 'var(--text-main)', cursor: 'pointer' }}><X size={24} /></button>
-            </div>
-            <div style={{ flex: 1, padding: '24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {[
-                { u: "Tolu", m: "Has anyone finished the level 2 quiz?", t: "10:24 AM" },
-                { u: "Chioma", m: "I'm on it! Chemistry is tricky this time.", t: "10:26 AM" },
-                { u: "Admin", m: "New practice questions added to the cloud.", t: "11:05 AM" }
-              ].map((msg, i) => (
-                <div key={i} style={{ alignSelf: msg.u === "Admin" ? 'center' : 'flex-start', maxWidth: '85%' }}>
-                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '0.75rem', fontWeight: 700 }}>
-                     <span style={{ color: activeChat.color }}>{msg.u}</span>
-                     <span style={{ color: 'var(--text-muted)' }}>{msg.t}</span>
-                   </div>
-                   <div style={{ padding: '12px 16px', background: 'var(--accents-1)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                     {msg.m}
-                   </div>
+                <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: `${activeChat.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: activeChat.color }}>
+                  <Users size={18} />
                 </div>
-              ))}
+                <div>
+                  <h3 style={{ fontWeight: 800, fontSize: '1rem' }}>{activeChat.name}</h3>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{activeChat.members} member{activeChat.members !== 1 ? 's' : ''}</p>
+                </div>
+              </div>
+              <button onClick={() => setActiveChat(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '8px' }}>
+                <X size={20} />
+              </button>
             </div>
-            <div style={{ padding: '24px', borderTop: '1px solid var(--border)' }}>
-              <input 
-                placeholder="Type a message..." 
-                style={{ width: '100%', padding: '14px', borderRadius: '100px', border: '1px solid var(--border)', background: 'var(--accents-1)', color: 'var(--text-main)' }}
+
+            <div style={{ flex: 1, padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {(activeChat.messages || []).length === 0 ? (
+                <div style={{ textAlign: 'center', color: 'var(--text-muted)', margin: 'auto', padding: '40px 0' }}>
+                  <MessageSquare size={48} style={{ opacity: 0.15, marginBottom: '16px' }} />
+                  <p style={{ fontWeight: 600, fontSize: '1rem' }}>No messages yet</p>
+                  <p style={{ fontSize: '0.85rem', marginTop: '6px' }}>Say hello to the group!</p>
+                </div>
+              ) : (
+                (activeChat.messages || []).map((msg: any, i: number) => {
+                  const isMe = msg.u === username;
+                  return (
+                    <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                      style={{ display: 'flex', flexDirection: 'column', alignItems: isMe ? 'flex-end' : 'flex-start' }}
+                    >
+                      <div style={{ fontSize: '0.72rem', fontWeight: 700, marginBottom: '5px', display: 'flex', gap: '6px', color: isMe ? activeChat.color : 'var(--text-muted)' }}>
+                        <span>{isMe ? 'You' : msg.u}</span>
+                        <span style={{ fontWeight: 400 }}>{msg.t}</span>
+                      </div>
+                      <div style={{ padding: '10px 16px', background: isMe ? activeChat.color : 'var(--accents-1)', color: isMe ? '#fff' : 'var(--text-main)', borderRadius: isMe ? '16px 4px 16px 16px' : '4px 16px 16px 16px', border: isMe ? 'none' : '1px solid var(--border)', maxWidth: '85%', wordBreak: 'break-word', fontSize: '0.95rem', lineHeight: 1.5 }}>
+                        {msg.m}
+                      </div>
+                    </motion.div>
+                  );
+                })
+              )}
+            </div>
+
+            <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border)', display: 'flex', gap: '10px', alignItems: 'center', background: 'var(--accents-1)' }}>
+              <input
+                id={`chat-input-${activeChat.id}`}
+                placeholder="Type a message..."
+                style={{ flex: 1, padding: '12px 18px', borderRadius: '100px', border: '1px solid var(--border)', background: 'var(--bg-color)', color: 'var(--text-main)', outline: 'none', fontSize: '0.95rem' }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    sendMessage(e.currentTarget.value);
+                    e.currentTarget.value = '';
+                  }
+                }}
               />
+              <motion.button
+                whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}
+                className="btn btn-primary"
+                style={{ borderRadius: '50%', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: 0 }}
+                onClick={() => {
+                  const input = document.getElementById(`chat-input-${activeChat.id}`) as HTMLInputElement;
+                  if (input) { sendMessage(input.value); input.value = ''; }
+                }}
+              >
+                <MessageSquare size={18} />
+              </motion.button>
             </div>
           </motion.div>
         )}
@@ -1076,55 +1117,69 @@ const StudyGroupsPage = () => {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
         {groups.map((group, i) => (
           <motion.div
-            key={group.id}
-            layout
-            whileHover={{ y: -8 }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className="card"
-            style={{ padding: '32px', position: 'relative', overflow: 'hidden' }}
+            key={group.id} layout
+            whileHover={{ y: -8, boxShadow: `0 20px 40px -20px ${group.color}40` }}
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.08 }}
+            className="card" style={{ padding: '32px', position: 'relative', overflow: 'hidden' }}
           >
-            <div style={{ position: 'absolute', top: 0, left: 0, width: '6px', height: '100%', background: group.color }}></div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-               <div style={{ padding: '10px', background: `${group.color}15`, color: group.color, borderRadius: '12px' }}>
-                 <Users size={24} />
-               </div>
-               <span style={{ fontSize: '0.8rem', fontWeight: 800, color: group.color, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{group.activity}</span>
+            <div style={{ position: 'absolute', top: 0, left: 0, width: '5px', height: '100%', background: group.color }}></div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+              <div style={{ padding: '10px', background: `${group.color}18`, color: group.color, borderRadius: '12px' }}>
+                <Users size={22} />
+              </div>
+              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: group.color, textTransform: 'uppercase', letterSpacing: '0.08em', background: `${group.color}15`, padding: '4px 10px', borderRadius: '100px' }}>{group.activity}</span>
             </div>
-            <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '8px' }}>{group.name}</h3>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>{group.members} active students participating.</p>
+            <h3 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '6px' }}>{group.name}</h3>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '28px', fontSize: '0.9rem' }}>{group.members} active student{group.members !== 1 ? 's' : ''} participating.</p>
             <div style={{ display: 'flex', gap: '10px' }}>
-              <button 
+              <motion.button
+                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                 onClick={() => handleJoin(group.id)}
                 disabled={group.joined}
-                className="btn" 
-                style={{ 
-                  flex: 1,
-                  background: group.joined ? 'var(--success)' : 'var(--accents-1)', 
-                  color: group.joined ? '#fff' : 'inherit',
-                  border: group.joined ? 'none' : '1px solid var(--border)', 
-                  fontWeight: 700 
-                }}
+                className="btn"
+                style={{ flex: 1, background: group.joined ? 'var(--success)' : 'var(--accents-1)', color: group.joined ? '#fff' : 'inherit', border: group.joined ? 'none' : '1px solid var(--border)', fontWeight: 700, cursor: group.joined ? 'default' : 'pointer' }}
               >
-                {group.joined ? 'Already Joined' : 'Join Group'}
-              </button>
+                {group.joined ? 'Joined ✓' : 'Join Group'}
+              </motion.button>
               {group.joined && (
-                <button 
+                <motion.button
+                  whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
                   onClick={() => setActiveChat(group)}
-                  className="btn btn-primary" 
-                  style={{ flex: 1 }}
+                  className="btn btn-primary"
+                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontWeight: 700 }}
                 >
-                  <MessageSquare size={18} />
-                </button>
+                  <MessageSquare size={16} /> Chat
+                </motion.button>
               )}
             </div>
           </motion.div>
         ))}
+
+        {groups.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '100px 40px', color: 'var(--text-muted)' }}
+          >
+            <Users size={72} style={{ opacity: 0.1, marginBottom: '24px' }} />
+            <p style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '10px' }}>No study groups yet.</p>
+            <p style={{ fontSize: '1rem' }}>
+              {username
+                ? 'Be the first to create one using the button above!'
+                : <span>Please <Link to="/login" style={{ color: 'var(--primary)', fontWeight: 700 }}>sign in</Link> to create or join a study group.</span>
+              }
+            </p>
+          </motion.div>
+        )}
       </div>
     </div>
   );
 };
+
+
+
+
+
 
 // --- Main App Component ---
 
