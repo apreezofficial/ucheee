@@ -28,7 +28,8 @@ import {
   ShieldAlert,
   FileText,
   Users,
-  MessageSquare
+  MessageSquare,
+  Trash2
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import questionsData from './data/questions.json';
@@ -980,9 +981,16 @@ const StudyGroupsPage = () => {
   const handleJoin = (id: number) => {
     requireLogin(() =>
       setGroups(prev => prev.map(g =>
-        g.id === id && !g.joined ? { ...g, members: g.members + 1, joined: true } : g
+        g.id === id && !g.joined ? { ...g, members: g.members + 1, joined: true, membersList: [...(g.membersList || []), username] } : g
       ))
     );
+  };
+
+  const handleDelete = (id: number) => {
+    if (window.confirm('Are you sure you want to delete this group?')) {
+      setGroups(prev => prev.filter(g => g.id !== id));
+      if (activeChat?.id === id) setActiveChat(null);
+    }
   };
 
   const handleCreate = (e: React.FormEvent) => {
@@ -997,6 +1005,8 @@ const StudyGroupsPage = () => {
       color: colors[Math.floor(Math.random() * colors.length)],
       joined: true,
       messages: [] as any[],
+      creator: username,
+      membersList: [username]
     };
     setGroups(prev => [newGroup, ...prev]);
     setNewName('');
@@ -1150,10 +1160,24 @@ const StudyGroupsPage = () => {
               <div style={{ padding: '10px', background: `${group.color}18`, color: group.color, borderRadius: '12px' }}>
                 <Users size={22} />
               </div>
-              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: group.color, textTransform: 'uppercase', letterSpacing: '0.08em', background: `${group.color}15`, padding: '4px 10px', borderRadius: '100px' }}>{group.activity}</span>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                {group.creator === username && (
+                  <button onClick={() => handleDelete(group.id)} style={{ background: 'none', border: 'none', color: '#ff4d4f', cursor: 'pointer', padding: '4px', display: 'flex' }} title="Delete Group">
+                    <Trash2 size={18} />
+                  </button>
+                )}
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: group.color, textTransform: 'uppercase', letterSpacing: '0.08em', background: `${group.color}15`, padding: '4px 10px', borderRadius: '100px' }}>{group.activity}</span>
+              </div>
             </div>
             <h3 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '6px' }}>{group.name}</h3>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '28px', fontSize: '0.9rem' }}>{group.members} active student{group.members !== 1 ? 's' : ''} participating.</p>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '8px', fontSize: '0.9rem' }}>{group.members} active student{group.members !== 1 ? 's' : ''} participating.</p>
+            {(group.membersList && group.membersList.length > 0) ? (
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '24px', fontStyle: 'italic', wordBreak: 'break-word' }}>
+                Members: {group.membersList.join(', ')}
+              </p>
+            ) : (
+              <div style={{ marginBottom: '24px' }}></div>
+            )}
             <div style={{ display: 'flex', gap: '10px' }}>
               <motion.button
                 whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
