@@ -945,7 +945,18 @@ const TermsPage = () => (
 const StudyGroupsPage = () => {
   const navigate = useNavigate();
   const username = localStorage.getItem('username');
-  const [groups, setGroups] = useState<any[]>([]);
+  
+  // Initialize from localStorage
+  const [groups, setGroups] = useState<any[]>(() => {
+    const saved = localStorage.getItem('study_groups');
+    return saved ? JSON.parse(saved) : [];
+  });
+  
+  // Save to localStorage whenever groups change
+  useEffect(() => {
+    localStorage.setItem('study_groups', JSON.stringify(groups));
+  }, [groups]);
+
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState('');
   const [activeChat, setActiveChat] = useState<any>(null);
