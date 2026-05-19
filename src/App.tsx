@@ -183,9 +183,20 @@ const Navbar = () => {
           <Link to="/survey" className="nav-link">Survey</Link>
 
           {username ? (
-            <div className="nav-user-section">
+            <div className="nav-user-section" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
               <span style={{ fontWeight: 600 }}>Welcome, {username}</span>
               <Link to="/dashboard" className="btn btn-primary" style={{ padding: '8px 16px', fontSize: '0.9rem' }}>My Dashboard</Link>
+              <button 
+                onClick={() => {
+                  localStorage.removeItem('user');
+                  localStorage.removeItem('username');
+                  window.location.href = '/login';
+                }} 
+                className="btn btn-secondary" 
+                style={{ padding: '8px 16px', fontSize: '0.9rem', cursor: 'pointer' }}
+              >
+                Logout
+              </button>
             </div>
           ) : (
             <Link to="/login" className="btn btn-primary">Sign In</Link>
